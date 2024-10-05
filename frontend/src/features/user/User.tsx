@@ -9,6 +9,9 @@ function LoginComponent () {
     const user = useAppSelector(selectUser);
     const dispatch = useAppDispatch();
 
+    const accessToken = useAppSelector(state => state.user.accessToken);
+
+
     const handleLoginRedirect = () => {   
         instance
             .loginPopup({...loginRequest,})
@@ -43,6 +46,7 @@ function LoginComponent () {
         <>
             <AuthenticatedTemplate>
                 <div>User logged in: {user?.idTokenClaims?.name}</div>
+                <p>Access Token: {accessToken}</p>
                 <button onClick={handleLogoutRedirect}> Sign Out </button>
                 <button onClick={handleProfileEdit}> Edit Profile </button>
             </AuthenticatedTemplate>
