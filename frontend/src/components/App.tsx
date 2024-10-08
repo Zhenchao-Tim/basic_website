@@ -1,6 +1,6 @@
 import './App.css'
 import { useState } from 'react'
-import User from './features/user/User';
+import User from '../features/user/User';
 
 
 // Main App component that receives msalInstance as a prop
