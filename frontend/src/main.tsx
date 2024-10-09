@@ -7,8 +7,12 @@ import { msalConfig } from './authConfig'
 import { store } from './app/store';            // Import the Redux store
 import { Provider } from 'react-redux'          // id you need redux
 
-import User from './features/user/User'
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Nav from './components/Nav.tsx'
+//import User from './features/user/User'
+
 import ProductTable from './components/productTable';
+import App from './components/App.tsx';
 
 // Create an instance of PublicClientApplication
 export const msalInstance = new PublicClientApplication(msalConfig);
@@ -27,8 +31,18 @@ msalInstance.addEventCallback((event: EventMessage) => {
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>                            {/* Enables additional checks in development mode */}
     <Provider store={store}>                    {/* Redux store provider */}
-      <User msalInstance={msalInstance}/>
-      <ProductTable />
+      <BrowserRouter>
+       <Routes>
+          <Route path="/" element={<Nav msalInstance={msalInstance} />}>
+            <Route index element={
+              <>
+                <ProductTable />
+                <App />
+              </>
+            } />
+          </Route>
+        </Routes>
+      </BrowserRouter>
     </Provider>
-  </React.StrictMode>
-);
+  </React.StrictMode>,
+)

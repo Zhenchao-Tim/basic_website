@@ -10,6 +10,8 @@ import { setAccessToken, setClaims, selectAccessToken, selectClaims } from './us
 import { useEffect } from 'react';
 
 import App from '../../components/App.tsx';
+import { Link } from 'react-router-dom';
+import "./User.css"
 
 function LoginComponent () {                        
     const {instance, inProgress} = useMsal();   // unpack Msal into 2 object
@@ -72,8 +74,14 @@ function LoginComponent () {
     return (
         <>
             <AuthenticatedTemplate>
-                <button onClick={handleLogoutRedirect}> Sign Out </button>
-                <button onClick={handleProfileEdit}> Edit Profile </button>
+                <div className="dropdown">
+                    <button className="dropbtn">{claims?.name}</button>
+                    <div className="dropdown-content">
+                        <Link to="/inventory">Inventory</Link>
+                        <a href="" onClick={handleProfileEdit}>Edit Profile</a>
+                        <a href="" onClick={handleLogoutRedirect}>Sign Out</a>
+                    </div>
+                </div>
             </AuthenticatedTemplate>
             <UnauthenticatedTemplate>
                 <button onClick={handleLoginRedirect}> Sign In </button>
@@ -86,7 +94,6 @@ function User(props: MsalProp){
     return (
         <MsalProvider instance={props.msalInstance}>
           <LoginComponent />
-          <App />
         </MsalProvider>
     )
 }

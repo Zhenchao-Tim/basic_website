@@ -1,0 +1,14 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="200"
+  height="200"
+  viewBox="0 0 200 200"
+>
+  <circle cx="50" cy="50" r="40" fill="#FF5733" />
+  <circle cx="150" cy="50" r="40" fill="#33FF57" />
+  <circle cx="50" cy="150" r="40" fill="#3357FF" />
+  <circle cx="150" cy="150" r="40" fill="#F1C40F" />
+  <text x="100" y="100" font-size="20" text-anchor="middle" fill="#FFFFFF" dominant-baseline="middle">
+    Random SVG
+  </text>
+</svg>
