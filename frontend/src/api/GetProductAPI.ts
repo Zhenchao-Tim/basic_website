@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { Product } from '../dataModels/Product'
+import { Product } from '../dataModel/Product';
 
 const newProduct = (): Product => {
     return {

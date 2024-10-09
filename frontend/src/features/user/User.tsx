@@ -1,23 +1,50 @@
-import { PublicClientApplication, EventType, EventMessage, AuthenticationResult, IPublicClientApplication, InteractionStatus } from '@azure/msal-browser'
+import { b2cPolicies, loginRequest } from '../../authConfig.ts'; 
 import { AuthenticatedTemplate, MsalProvider, UnauthenticatedTemplate, useMsal } from '@azure/msal-react';
-import { b2cPolicies, loginRequest, msalConfig } from '../../authConfig';
+import MsalProp from '../../dataModel/MsalProp.ts';
+import { InteractionStatus, SilentRequest } from '@azure/msal-browser'
+
+// use redux
 import { useAppSelector, useAppDispatch } from '../../app/hooks'
-import { setActiveAccount, setAccessToken, setClaims, selectUser } from './userSlice'
+import { setAccessToken, setClaims, selectAccessToken, selectClaims } from './userSlice'
+
+import { useEffect } from 'react';
+
+import App from '../../components/App.tsx';
 
 function LoginComponent () {                        
-    const {instance, inProgress} = useMsal();           
-    const user = useAppSelector(selectUser);
-    const dispatch = useAppDispatch();
+    const {instance, inProgress} = useMsal();   // unpack Msal into 2 object
+    const accessToken = useAppSelector(selectAccessToken);  // read accessToken
+    const claims = useAppSelector(selectClaims);
+    const dispatch = useAppDispatch();  // ready for undate datas in different states
 
-    const accessToken = useAppSelector(state => state.user.accessToken);
+    // use redux so use useEffect
+    useEffect(() => {
+        const activeAccount = instance.getActiveAccount();
+        if (activeAccount) {
+            dispatch(setClaims(activeAccount?.idTokenClaims));
+        }
 
+        if (accessToken == null)
+        {
+          const accessTokenRequest: SilentRequest = {
+            scopes: loginRequest.scopes,
+            account: activeAccount || undefined,
+          };
+          
+          instance.initialize().then(() => {instance.acquireTokenSilent(accessTokenRequest)
+          .then((result) => {
+            // Acquire token silent success
+            dispatch(setAccessToken(result.accessToken));
+          });});
+        }
+    }, [accessToken, dispatch, instance]);
 
+    // logic about login/logout
     const handleLoginRedirect = () => {   
         instance
             .loginPopup({...loginRequest,})
             .then(result => {
                 dispatch(setAccessToken(result.accessToken));
-                dispatch(setActiveAccount(result.account));
                 dispatch(setClaims(result.idTokenClaims));
             })                              
             .catch( e => {                  
@@ -45,8 +72,6 @@ function LoginComponent () {
     return (
         <>
             <AuthenticatedTemplate>
-                <div>User logged in: {user?.idTokenClaims?.name}</div>
-                <p>Access Token: {accessToken}</p>
                 <button onClick={handleLogoutRedirect}> Sign Out </button>
                 <button onClick={handleProfileEdit}> Edit Profile </button>
             </AuthenticatedTemplate>
@@ -57,31 +82,11 @@ function LoginComponent () {
     )
 }
 
-function User(){
-    const msalInstance : IPublicClientApplication = new PublicClientApplication(msalConfig);
-    const dispatch = useAppDispatch()
-
-    if (!msalInstance.getActiveAccount() && msalInstance.getAllAccounts().length > 0) {
-    // Account selection logic is app dependent. Adjust as needed for different use cases.
-        const result = msalInstance.getAllAccounts()[0];
-        dispatch(setActiveAccount(result));
-        dispatch(setClaims(result.idTokenClaims));
-    }
-
-    msalInstance.addEventCallback((event: EventMessage) => {
-        if ((event.eventType === EventType.LOGIN_SUCCESS ||
-                event.eventType === EventType.ACQUIRE_TOKEN_SUCCESS ||
-                event.eventType === EventType.SSO_SILENT_SUCCESS) && event.payload) {
-            const payload = event.payload as AuthenticationResult;
-            dispatch(setActiveAccount(payload.account));
-            dispatch(setClaims(payload.idTokenClaims));
-            dispatch(setAccessToken(payload.accessToken));
-         }
-    });
-    
+function User(props: MsalProp){
     return (
-        <MsalProvider instance={msalInstance}>
+        <MsalProvider instance={props.msalInstance}>
           <LoginComponent />
+          <App />
         </MsalProvider>
     )
 }

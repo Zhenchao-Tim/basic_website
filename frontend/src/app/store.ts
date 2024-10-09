@@ -2,15 +2,11 @@ import { configureStore } from '@reduxjs/toolkit'
 
 // import your slices
 import userReducer from '../features/user/userSlice'
-// you may have another slice
 
 // configure and create the redux store
 export const store = configureStore({
   reducer: {
     user: userReducer
-    // add more slice if you need, like:
-    // posts: postsReducer,
-    // comments: commentsReducer,
   }
 })
 
