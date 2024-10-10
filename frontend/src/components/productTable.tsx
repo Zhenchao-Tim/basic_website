@@ -15,7 +15,7 @@ import {
   getExpandedRowModel,
   SortingState,
 } from '@tanstack/react-table';
-import { Product } from '../dataModel/Product';
+import { listingProduct } from '../dataModel/ListingProduct';
 import getProducts from '../api/GetProductAPI';
 import { useAppSelector } from '../app/hooks'
 import { selectAccessToken } from '../features/user/userSlice'
@@ -24,7 +24,7 @@ import { selectAccessToken } from '../features/user/userSlice'
 function ProductTable() {
   const accessToken = useAppSelector(selectAccessToken);
 
-  const columns = useMemo<ColumnDef<Product>[]>(
+  const columns = useMemo<ColumnDef<listingProduct>[]>(
     () => [
       {
         accessorKey: 'productName',
@@ -81,7 +81,7 @@ function ProductTable() {
     // autoResetPageIndex: false, // turn off page index reset when sorting or filtering
   });
 
-  const renderSubComponent = ({ row }: { row: Row<Product> }) => {
+  const renderSubComponent = ({ row }: { row: Row<listingProduct> }) => {
     return (
       <div className={"productDetails " + (row.getIsExpanded() ? 'tb-expand' : '')}>
         <p>{row.original.description}</p> 
@@ -237,8 +237,8 @@ function Filter({
   column,
   table,
 }: {
-  column: Column<Product, unknown>;
-  table: Table<Product>;
+  column: Column<listingProduct, unknown>;
+  table: Table<listingProduct>;
 }) {
   const firstValue = table
     .getPreFilteredRowModel()
