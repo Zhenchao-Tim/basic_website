@@ -1,10 +1,12 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
-
 name: ci CI
 
 on:
   workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to build'
+        required: true
+        default: 'main'  # Default branch when triggered manually
   push:
     branches: [ "main" ]
   pull_request:
@@ -25,6 +27,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.inputs.branch || github.ref }}  # Use the selected branch, or the default branch in pushes/pull requests
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
