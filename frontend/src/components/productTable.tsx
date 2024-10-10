@@ -1,4 +1,4 @@
-import './ProductTable.css'
+import './productTable.css'
 import { Fragment, useState, useMemo } from 'react'
 import {
   Column,
