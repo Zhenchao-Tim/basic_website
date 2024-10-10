@@ -13,7 +13,7 @@ import Nav from './components/Nav.tsx'
 
 import ProductTable from './components/productTable';
 import NoMatch from './components/NoMatch.tsx';
-import UserInventory from './components/UserInventory.tsx';
+import UserInventory from './features/userInventory/UserInventory.tsx';
 
 // Create an instance of PublicClientApplication
 export const msalInstance = new PublicClientApplication(msalConfig);

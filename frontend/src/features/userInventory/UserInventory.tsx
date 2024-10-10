@@ -1,5 +1,6 @@
-import './ProductTable.css'
-import { Fragment, useState, useMemo } from 'react'
+import { Fragment, useState, useMemo, useEffect } from 'react';
+import ListingProductForm from './ListingProductForm';
+import Modal from 'react-modal';
 import {
   Column,
   ColumnDef,
@@ -11,20 +12,31 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-  Row,
   getExpandedRowModel,
   SortingState,
 } from '@tanstack/react-table';
-import { listingProduct } from '../dataModel/ListingProduct';
-import getProducts from '../api/GetProductAPI';
-import { useAppSelector } from '../app/hooks'
-import { selectAccessToken } from '../features/user/userSlice'
+import { Product } from '../../dataModel/Product';
+import { LoadingStatus, fetchInventory, selectInventoryProducts, refreshData } from './userInventorySlice'
+import { useAppSelector, useAppDispatch } from '../../app/hooks'
+import { selectAccessToken, selectClaims } from '../user/userSlice'
 
 
-function ProductTable() {
+function UserInventory() {
+
+  const dispatch = useAppDispatch()
   const accessToken = useAppSelector(selectAccessToken);
+  const claims = useAppSelector(selectClaims);
+  const userInventoryProducts = useAppSelector(selectInventoryProducts);
+  const userId = claims?.sub;
+  const inventoryStatus = useAppSelector(state => state.userInventory.status)
 
-  const columns = useMemo<ColumnDef<listingProduct>[]>(
+  useEffect(() => {
+    if (inventoryStatus === LoadingStatus.Idle && accessToken != null ) {
+      dispatch(fetchInventory(userId))
+    }
+  }, [inventoryStatus, dispatch, userId, accessToken])
+
+  const columns = useMemo<ColumnDef<Product>[]>(
     () => [
       {
         accessorKey: 'productName',
@@ -35,24 +47,10 @@ function ProductTable() {
         accessorKey: 'category',
         header: () => 'Category',
         enableSorting: false
-      },
-      {
-        accessorKey: 'price',
-        header: () => 'Price',
-        sortUndefined: 'last', //force undefined values to the end
-        sortDescFirst: false,
-        enableColumnFilter: false
-      },
-      {
-        accessorKey: 'seller',
-        header: () => 'Seller',
-        enableSorting: false
-      },
+      }
     ],
     []
   );
-
-  const [data] = useState(() => getProducts(10));
 
   const [sorting, setSorting] = useState<SortingState>([])
 
@@ -61,9 +59,9 @@ function ProductTable() {
     pageSize: 10,
   });
 
-  const table = useReactTable({
+  const table = useReactTable<Product>({
     columns,
-    data,
+    data: userInventoryProducts,
     debugTable: true,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -80,21 +78,50 @@ function ProductTable() {
     },
     // autoResetPageIndex: false, // turn off page index reset when sorting or filtering
   });
+  const customStyles = {
+    content: {
+      top: '50%',
+      left: '50%',
+      right: 'auto',
+      bottom: 'auto',
+      marginRight: '-50%',
+      transform: 'translate(-50%, -50%)',
+    },
+  };
 
-  const renderSubComponent = ({ row }: { row: Row<listingProduct> }) => {
-    return (
-      <div className={"productDetails " + (row.getIsExpanded() ? 'tb-expand' : '')}>
-        <p>{row.original.description}</p> 
-        <div style={{textAlign:'right'}}>
-          <button className='buyBtn'>Buy Now</button>
-        </div>
-      </div>
-    )
+  Modal.setAppElement('#root');
+  const [modalIsOpen, setIsOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product>();
+
+  function openModal(product: Product) {
+    setIsOpen(true);
+    setSelectedProduct(product);
+  }
+
+  function afterOpenModal() {
+  }
+
+  function closeModal() {
+    setIsOpen(false);
   }
 
   return (
     <div className="main">
-    {accessToken ? (
+       <Modal
+        isOpen={modalIsOpen}
+        onAfterOpen={afterOpenModal}
+        onRequestClose={closeModal}
+        style={customStyles}
+      >
+        <ListingProductForm selectedProduct={selectedProduct} closeModal={closeModal} />
+      </Modal>
+    {accessToken ? ( 
+      inventoryStatus == LoadingStatus.Loading ? (
+        <>
+          <h3>Loading...</h3>
+        </>
+      ) :
+      (
       <>
       <table>
         <thead>
@@ -135,7 +162,7 @@ function ProductTable() {
           {table.getRowModel().rows.map((row) => {
             return (
               <Fragment key={row.id}>
-                <tr onClick={row.getToggleExpandedHandler()} className='cursor-pointer tr-hover'>
+                <tr onClick={() => openModal(row.original)} className='cursor-pointer tr-hover'>
                 {row.getVisibleCells().map((cell) => {
                   return (
                     <td key={cell.id}>
@@ -146,11 +173,6 @@ function ProductTable() {
                     </td>
                   )
                 })}
-              </tr>
-              <tr>
-                <td colSpan={row.getVisibleCells().length}>
-                {renderSubComponent({row})}
-                </td>
               </tr>
               </Fragment>
             )
@@ -223,8 +245,9 @@ function ProductTable() {
         {table.getRowCount().toLocaleString()} Rows
       </div>
       <pre>{JSON.stringify(table.getState().pagination, null, 2)}</pre>
+      <button onClick={() => dispatch(refreshData())}>Refresh Data</button>
     </>
-    ) : (
+    )) : (
     <>
       <h1>Please login first.</h1>
     </>
@@ -237,8 +260,8 @@ function Filter({
   column,
   table,
 }: {
-  column: Column<listingProduct, unknown>;
-  table: Table<listingProduct>;
+  column: Column<Product, unknown>;
+  table: Table<Product>;
 }) {
   const firstValue = table
     .getPreFilteredRowModel()
@@ -285,4 +308,4 @@ function Filter({
   );
 }  
 
-export default ProductTable;
+export default UserInventory;

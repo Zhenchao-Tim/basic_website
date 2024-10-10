@@ -2,11 +2,14 @@ import { configureStore } from '@reduxjs/toolkit'
 
 // import your slices
 import userReducer from '../features/user/userSlice'
+import userInventoryReducer from '../features/userInventory/userInventorySlice'
+
 
 // configure and create the redux store
 export const store = configureStore({
   reducer: {
-    user: userReducer
+    user: userReducer,
+    userInventory: userInventoryReducer
   }
 })
 
