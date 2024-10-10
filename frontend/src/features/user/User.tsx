@@ -9,7 +9,6 @@ import { setAccessToken, setClaims, selectAccessToken, selectClaims } from './us
 
 import { useEffect } from 'react';
 
-import App from '../../components/App.tsx';
 import { Link } from 'react-router-dom';
 import "./User.css"
 

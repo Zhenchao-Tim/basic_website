@@ -12,7 +12,8 @@ import Nav from './components/Nav.tsx'
 //import User from './features/user/User'
 
 import ProductTable from './components/productTable';
-import App from './components/App.tsx';
+import NoMatch from './components/NoMatch.tsx';
+import UserInventory from './components/UserInventory.tsx';
 
 // Create an instance of PublicClientApplication
 export const msalInstance = new PublicClientApplication(msalConfig);
@@ -34,12 +35,13 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <BrowserRouter>
        <Routes>
           <Route path="/" element={<Nav msalInstance={msalInstance} />}>
-            <Route index element={
-              <>
-                <ProductTable />
-                <App />
-              </>
-            } />
+          <Route index element={
+            <>
+              <ProductTable />
+            </>
+          } />
+          <Route path="inventory" element={<UserInventory />} />
+          <Route path="*" element={<NoMatch />} />
           </Route>
         </Routes>
       </BrowserRouter>
